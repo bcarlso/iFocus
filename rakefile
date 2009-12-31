@@ -1,0 +1,4 @@
+task :install do
+  install_directory = '/Users/bcarlson/Library/Widgets'
+  cp_r './iFocus.wdgt', install_directory
+end

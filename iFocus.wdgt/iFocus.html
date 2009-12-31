@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>iFocus</title>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js" />
+	<script>
+		var Pomodoro = Class.create({
+			initialize: function() {
+				$('time-remaining').innerHTML = '&nbsp;';
+				this.interval = window.widget ? 60 : 1;
+			},
+
+			start: function() {
+				var timeRemaining = 25;
+				$('time-remaining').innerText = timeRemaining;
+				this.timer = new PeriodicalExecuter(function(executor) {
+					timeRemaining--;
+					$('time-remaining').innerText = timeRemaining;
+					if(timeRemaining == 0) {
+						executor.stop()
+						$('timer-abandon').hide();
+						$('timer-start').show();
+					}
+				}, this.interval);
+			},
+
+			abandon: function() {
+				this.abandoned = true;
+				this.timer.stop();
+			}
+		});
+		
+		document.observe("dom:loaded", function() {
+			var pomodoros = [];
+			var currentPomodoro = new Pomodoro();
+			$('complete-message').hide();
+			$('abandoned-message').hide();
+			$('timer-abandon').hide();
+			$('timer-start').observe('click', function(event) {
+				this.hide();
+				$('timer-abandon').show();
+				pomodoros.push(currentPomodoro)
+				currentPomodoro.start();
+			});
+			
+			$('timer-abandon').observe('click', function(event) {
+				$('timer-abandon').hide();
+				$('timer-start').show();
+				currentPomodoro.abandon();
+				currentPomodoro = new Pomodoro();
+			});
+		});
+	</script>
+	
+	<style>
+		body {
+			background-image: url("Default.png");
+			padding-top: 15px;
+			text-align: center;
+			color: white;
+			font-family: sans-serif;
+		}
+		
+		a {
+			color: white;
+		}
+		#time-remaining {
+			font-size: 36pt;
+		}
+		
+		#timer-start {
+		}
+		
+		#timer-abandon {
+		}
+	</style>
+</head>
+
+<body>
+	<div id="time-remaining">iFocus!</div>
+	<div id="complete-message">Complete!</div>
+	<div id="abandoned-message">Abandoned!</div>
+	<a id="timer-start" href="#">New Pomodoro</a>
+	<a id="timer-abandon" href="#">Abandon!</a>
+</body>
+</html>

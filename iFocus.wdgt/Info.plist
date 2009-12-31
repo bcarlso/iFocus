@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>iFocus</string>
+	<key>CFBundleIdentifier</key>
+	<string>net.bcarlso.pomodoro.iFocus</string>
+	<key>CFBundleName</key>
+	<string>iFocus</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
+	<key>MainHTML</key>
+	<string>iFocus.html</string>
+	<key>CloseBoxInsetX</key>
+	<integer>15</integer>
+	<key>CloseBoxInsetY</key>
+	<integer>15</integer>
+	<key>Width</key>
+	<string>167</string>
+	<key>Height</key>
+	<string>118</string>
+	<key>AllowSystem</key>
+	<false/>
+	<key>AllowNetworkAccess</key>
+	<true/>
+	<key>AllowInternetPlugins</key>
+	<false/>
+</dict>
+</plist>
