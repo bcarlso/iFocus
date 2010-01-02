@@ -34,7 +34,9 @@
 			},
 			
 			addInterruption: function() {
-				this.interruptions++;
+				if(this.timer) {
+					this.interruptions++;
+				}
 			}
 		});
 		
@@ -60,51 +62,45 @@
 				$('timer-start').show();
 			}
 		});
-		
+
 		document.observe("dom:loaded", function() {
 			var interval = window.widget ? 60 : 1; // Use minutes in the dashboard, but seconds for development.
 			var pomodoros = [];
 			var currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
 
-			var keyEvents = {
-				// "n" key pressed.
-				110: function() {
-					pomodoros.push(currentPomodoro);
-					currentPomodoro.start();
-				},
-			
-				// "a" key pressed.
-				97: function() {
-					currentPomodoro.abandon();
-					currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
-				},
-			
-				// "'" key pressed.
-				39: function() {
-					currentPomodoro.addInterruption();
-				},
-				
-				// "?" key pressed.
-				63: function() {
-					
-				}
+			var NewPomodoro = function() {
+				pomodoros.push(currentPomodoro);
+				currentPomodoro.start();
+			};
+
+			var AbandonPomodoro = function() {
+				currentPomodoro.abandon();
+				currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
+			};
+
+			var Interrupted = function() {
+				currentPomodoro.addInterruption();
+			}
+
+			var Help = function() {
+				;
+			}
+
+			var KEY_EVENTS = {
+				110: NewPomodoro,
+		 		 97: AbandonPomodoro,
+				 39: Interrupted,
+				 63: Help
 			};
 			
 			$$('body')[0].observe('keypress', function(event) {
-				keyEvents[event.keyCode]();
+				KEY_EVENTS[event.keyCode]();
 			});
 			
 			$('timer-abandon').hide();
 			$('time-remaining').innerHTML = '&nbsp;';
-			$('timer-start').observe('click', function(event) {
-				pomodoros.push(currentPomodoro);
-				currentPomodoro.start();
-			});
-			
-			$('timer-abandon').observe('click', function(event) {
-				currentPomodoro.abandon();
-				currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
-			});
+			$('timer-start').observe('click', NewPomodoro);
+			$('timer-abandon').observe('click', AbandonPomodoro);
 		});
 	</script>
 	
@@ -127,12 +123,6 @@
 		
 		#time-remaining {
 			font-size: 36pt;
-		}
-		
-		#timer-start {
-		}
-		
-		#timer-abandon {
 		}
 	</style>
 </head>
