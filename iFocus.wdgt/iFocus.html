@@ -11,6 +11,7 @@
 			initialize: function(timerInterval, eventhandler) {
 				this.interval = timerInterval;
 				this.events = eventhandler;
+				this.interruptions = 0;
 			},
 
 			start: function() {
@@ -18,8 +19,7 @@
 				var events = this.events;
 				events.onStart(timeRemaining);
 				this.timer = new PeriodicalExecuter(function(executor) {
-					timeRemaining--;
-					events.onTimer(timeRemaining);
+					events.onTimer(--timeRemaining);
 					if(timeRemaining == 0) {
 						executor.stop();
 						events.onFinish();
@@ -31,6 +31,10 @@
 				this.abandoned = true;
 				this.timer.stop();
 				this.events.onAbandon();
+			},
+			
+			addInterruption: function() {
+				this.interruptions++;
 			}
 		});
 		
@@ -58,15 +62,42 @@
 		});
 		
 		document.observe("dom:loaded", function() {
-			var interval = window.widget ? 60 : 1;
+			var interval = window.widget ? 60 : 1; // Use minutes in the dashboard, but seconds for development.
 			var pomodoros = [];
 			var currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
+
+			var keyEvents = {
+				// "n" key pressed.
+				110: function() {
+					pomodoros.push(currentPomodoro);
+					currentPomodoro.start();
+				},
+			
+				// "a" key pressed.
+				97: function() {
+					currentPomodoro.abandon();
+					currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
+				},
+			
+				// "'" key pressed.
+				39: function() {
+					currentPomodoro.addInterruption();
+				},
+				
+				// "?" key pressed.
+				63: function() {
+					
+				}
+			};
+			
+			$$('body')[0].observe('keypress', function(event) {
+				keyEvents[event.keyCode]();
+			});
 			
 			$('timer-abandon').hide();
 			$('time-remaining').innerHTML = '&nbsp;';
-
 			$('timer-start').observe('click', function(event) {
-				pomodoros.push(currentPomodoro)
+				pomodoros.push(currentPomodoro);
 				currentPomodoro.start();
 			});
 			
