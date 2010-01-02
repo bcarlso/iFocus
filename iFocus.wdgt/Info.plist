@@ -21,7 +21,7 @@
 	<key>Height</key>
 	<string>118</string>
 	<key>AllowSystem</key>
-	<false/>
+	<true/>
 	<key>AllowNetworkAccess</key>
 	<true/>
 	<key>AllowInternetPlugins</key>

@@ -8,21 +8,21 @@
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js" />
 	<script>
 		var Pomodoro = Class.create({
-			initialize: function() {
-				$('time-remaining').innerHTML = '&nbsp;';
-				this.interval = window.widget ? 60 : 1;
+			initialize: function(timerInterval, eventhandler) {
+				this.interval = timerInterval;
+				this.events = eventhandler;
 			},
 
 			start: function() {
 				var timeRemaining = 25;
-				$('time-remaining').innerText = timeRemaining;
+				var events = this.events;
+				events.onStart(timeRemaining);
 				this.timer = new PeriodicalExecuter(function(executor) {
 					timeRemaining--;
-					$('time-remaining').innerText = timeRemaining;
+					events.onTimer(timeRemaining);
 					if(timeRemaining == 0) {
-						executor.stop()
-						$('timer-abandon').hide();
-						$('timer-start').show();
+						executor.stop();
+						events.onFinish();
 					}
 				}, this.interval);
 			},
@@ -30,27 +30,49 @@
 			abandon: function() {
 				this.abandoned = true;
 				this.timer.stop();
+				this.events.onAbandon();
+			}
+		});
+		
+		var PomodoroEventHandler = Class.create({
+			onStart: function(totalTime) {
+				$('timer-start', 'timer-abandon').invoke('toggle');
+				$('time-remaining').innerText = totalTime;
+			},
+		
+			onTimer: function(timeRemaining) {
+				$('time-remaining').innerText = timeRemaining;
+			},
+		
+			onFinish: function() {
+				$('timer-start', 'timer-abandon').invoke('toggle');
+				if(window.widget) {
+					widget.system("/usr/bin/say 'Break time!'", null);
+				}
+			},
+		
+			onAbandon: function() {
+				$('timer-abandon').hide();
+				$('timer-start').show();
 			}
 		});
 		
 		document.observe("dom:loaded", function() {
+			var interval = window.widget ? 60 : 1;
 			var pomodoros = [];
-			var currentPomodoro = new Pomodoro();
-			$('complete-message').hide();
-			$('abandoned-message').hide();
+			var currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
+			
 			$('timer-abandon').hide();
+			$('time-remaining').innerHTML = '&nbsp;';
+
 			$('timer-start').observe('click', function(event) {
-				this.hide();
-				$('timer-abandon').show();
 				pomodoros.push(currentPomodoro)
 				currentPomodoro.start();
 			});
 			
 			$('timer-abandon').observe('click', function(event) {
-				$('timer-abandon').hide();
-				$('timer-start').show();
 				currentPomodoro.abandon();
-				currentPomodoro = new Pomodoro();
+				currentPomodoro = new Pomodoro(interval, new PomodoroEventHandler());
 			});
 		});
 	</script>
@@ -67,6 +89,11 @@
 		a {
 			color: white;
 		}
+
+		.message {
+			display: none;
+		}
+		
 		#time-remaining {
 			font-size: 36pt;
 		}
@@ -80,9 +107,9 @@
 </head>
 
 <body>
-	<div id="time-remaining">iFocus!</div>
-	<div id="complete-message">Complete!</div>
-	<div id="abandoned-message">Abandoned!</div>
+	<div id="time-remaining"></div>
+	<div id="complete-message" class="message">Complete!</div>
+	<div id="abandoned-message" class="message">Abandoned!</div>
 	<a id="timer-start" href="#">New Pomodoro</a>
 	<a id="timer-abandon" href="#">Abandon!</a>
 </body>
